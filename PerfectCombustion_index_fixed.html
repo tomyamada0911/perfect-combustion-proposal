@@ -1,0 +1,634 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Perfect Combustion 戦略提案書 - NORI</title>
+    <!-- Tailwind CSS & FontAwesome CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Fredoka:wght@500;700&family=Noto+Sans+JP:wght@400;500;700;900&display=swap');
+        
+        body {
+            font-family: 'Noto Sans JP', sans-serif;
+            background-color: #fcfaf7;
+            color: #4a3e3d;
+        }
+        .font-brand {
+            font-family: 'Fredoka', 'Noto Sans JP', sans-serif;
+        }
+        .slide-fade {
+            animation: fadeIn 0.4s ease-in-out forwards;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(8px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .hide {
+            display: none !important;
+        }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col justify-between overflow-x-hidden selection:bg-amber-100">
+
+    <!-- TOP HEADER BAR -->
+    <nav class="bg-white/90 backdrop-blur-md border-b border-stone-200/80 px-4 py-3 sticky top-0 z-50 flex items-center justify-between shadow-sm">
+        <div class="flex items-center gap-2.5">
+            <div class="w-9 h-9 rounded-xl bg-gradient-to-br from-amber-500 to-orange-400 flex items-center justify-center text-white shadow-md shadow-orange-500/10">
+                <i class="fa-solid fa-mug-hot text-amber-500 text-lg"></i>
+            </div>
+            <div>
+                <span class="font-brand font-bold text-sm tracking-wider block text-stone-800 leading-none">PERFECT COMBUSTION</span>
+                <span class="text-[9px] text-amber-600 font-bold uppercase tracking-widest block mt-1">KANAGAWA AREA STRATEGY DECK</span>
+            </div>
+        </div>
+        
+        <div class="flex items-center gap-2">
+            <!-- VIEW MODE SWITCHER -->
+            <button id="view-mode-btn" onclick="toggleViewMode()" class="bg-amber-500/10 hover:bg-amber-500/20 text-amber-700 text-xs font-bold px-3 py-1.5 rounded-xl border border-amber-500/20 transition flex items-center gap-1.5">
+                <i class="fa-solid fa-square-poll-horizontal"></i>
+                <span id="view-mode-text" class="hidden sm:inline">全スライド縦並び（スクショ用）</span>
+                <span class="sm:hidden">切替</span>
+            </button>
+            
+            <!-- INDEX MENU BUTTON -->
+            <button onclick="toggleMenu()" class="p-2 hover:bg-stone-100 rounded-xl text-stone-500 transition" title="目次を開く">
+                <i class="fa-solid fa-bars text-lg"></i>
+            </button>
+        </div>
+    </nav>
+
+    <!-- SIDE PANEL (SLIDE DECK INDEX) -->
+    <div id="side-menu" class="fixed inset-y-0 right-0 z-50 w-80 bg-white border-l border-stone-200 shadow-2xl p-6 flex flex-col justify-between transform translate-x-full transition-transform duration-300">
+        <div>
+            <div class="flex items-center justify-between border-b border-stone-100 pb-4 mb-4">
+                <span class="font-bold text-stone-800 tracking-wider"><i class="fa-solid fa-list-check mr-2 text-amber-500"></i>CONTENTS</span>
+                <button onclick="toggleMenu()" class="text-stone-400 hover:text-stone-600 text-lg"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+            <div class="space-y-1 max-h-[72vh] overflow-y-auto pr-1" id="menu-items-list">
+                <!-- JS will inject contents list -->
+            </div>
+        </div>
+        <div class="border-t border-stone-100 pt-4 text-center">
+            <span class="text-[10px] text-stone-400 block">PROPOSED BY NORI (STUDIO MERRY CRAFT)</span>
+        </div>
+    </div>
+
+    <!-- MAIN PRESENTATION CANVAS -->
+    <main class="flex-grow flex items-center justify-center p-4 md:p-8" id="presentation-viewport">
+        
+        <!-- SLIDE MODE (DEFAULT) -->
+        <div class="w-full max-w-5xl" id="slide-presentation-container">
+            <div id="slide-card-element" class="w-full aspect-[16/9] min-h-[480px] sm:min-h-[540px] bg-white rounded-3xl border border-stone-200 shadow-xl relative overflow-hidden flex flex-col justify-between p-8 sm:p-12 slide-fade">
+                <!-- Decorative Pastel Background Vector Shapes -->
+                <div class="absolute -top-24 -left-24 w-80 h-80 bg-amber-100/50 rounded-full blur-3xl pointer-events-none"></div>
+                <div class="absolute -bottom-24 -right-24 w-80 h-80 bg-orange-100/40 rounded-full blur-3xl pointer-events-none"></div>
+
+                <!-- Slide Header -->
+                <div id="slide-header" class="flex justify-between items-center border-b border-stone-100 pb-4 relative z-10">
+                    <span id="slide-badge" class="text-[10px] bg-amber-500/10 text-amber-700 font-extrabold px-3 py-1 rounded-full tracking-wider uppercase">OVERVIEW</span>
+                    <span id="slide-subtitle" class="text-xs text-stone-400 font-bold max-w-[60%] truncate">Subtitle</span>
+                </div>
+
+                <!-- Slide Main Content (Injected by JS) -->
+                <div id="slide-body" class="flex-grow flex flex-col justify-center my-6 relative z-10">
+                    <!-- Dynamic content -->
+                </div>
+
+                <!-- Slide Progress Footer -->
+                <div class="relative z-10">
+                    <div class="w-full h-1 bg-stone-100 rounded-full overflow-hidden mb-1">
+                        <div id="progress-bar" class="h-full bg-gradient-to-r from-amber-400 to-orange-400 transition-all duration-300" style="width: 5%;"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- CONTROLLER OVERLAYS -->
+            <div class="mt-6 flex items-center justify-between px-2">
+                <button onclick="prevSlide()" class="w-12 h-12 rounded-2xl bg-white text-stone-600 border border-stone-200 hover:bg-stone-50 hover:text-stone-900 transition flex items-center justify-center shadow-md">
+                    <i class="fa-solid fa-chevron-left text-lg"></i>
+                </button>
+                
+                <div class="text-center">
+                    <span class="text-sm font-bold text-stone-700 block" id="slide-counter">1 / 12</span>
+                    <span class="text-[11px] text-amber-600 font-bold tracking-wider mt-0.5 block" id="slide-title-label">TITLE</span>
+                </div>
+
+                <button onclick="nextSlide()" class="w-12 h-12 rounded-2xl bg-white text-stone-600 border border-stone-200 hover:bg-stone-50 hover:text-stone-900 transition flex items-center justify-center shadow-md">
+                    <i class="fa-solid fa-chevron-right text-lg"></i>
+                </button>
+            </div>
+
+            <div class="text-center mt-6 text-[11px] text-stone-400 font-bold flex flex-col sm:flex-row items-center justify-center gap-2 sm:gap-6">
+                <span class="hidden sm:inline"><i class="fa-solid fa-keyboard mr-1 text-amber-400"></i>PC：キーボードの左右キー（← / →）でめくれます</span>
+                <span><i class="fa-solid fa-fingerprint mr-1 text-amber-400"></i>スマホ：画面左右のスワイプ操作に対応</span>
+            </div>
+        </div>
+
+        <!-- SCROLL MODE (FOR ALL SLIDES SCREENSHOTS) -->
+        <div class="w-full max-w-4xl space-y-12 py-4 hide" id="scroll-presentation-container">
+            <div class="bg-amber-500/5 border border-amber-500/20 p-5 rounded-2xl flex items-start gap-4 shadow-sm">
+                <i class="fa-solid fa-circle-info text-amber-500 text-xl mt-0.5 shrink-0"></i>
+                <div>
+                    <span class="font-bold text-amber-800 text-sm block">📸 スクリーンショット特化ビュー</span>
+                    <p class="text-xs text-stone-500 leading-relaxed mt-1">
+                        全12ページのスライドを美しいカード形式で並べています。スマホでスクロールしながら、特定のページをそのまま撮影して共有するのに最適です。
+                    </p>
+                </div>
+            </div>
+
+            <div id="scroll-cards-wrapper" class="space-y-12">
+                <!-- JS will inject all slide pages as scroll cards -->
+            </div>
+        </div>
+    </main>
+
+    <!-- FOOTER -->
+    <footer class="bg-white border-t border-stone-200/60 py-4 text-center text-[11px] text-stone-400">
+        <p>© 2026 Perfect Combustion Strategy Proposal | Created by NORI</p>
+    </footer>
+
+    <!-- INTERACTIVE STRATEGY DATA -->
+    <script>
+        // 12 Slides with Refined Content
+        const slidesData = [
+            {
+                id: 0,
+                category: "PROPOSAL",
+                subtitle: "神奈川エリア展開のご提案",
+                title: "神奈川から始めよう。",
+                content: `
+                    <div class="text-center space-y-6 py-4 flex flex-col items-center justify-center h-full relative z-10">
+                        <div class="inline-flex items-center gap-2 bg-amber-500/10 border border-amber-500/20 px-4 py-1.5 rounded-full text-amber-700 font-bold text-xs tracking-wider">
+                            <i class="fa-solid fa-leaf text-amber-500"></i> BRAND STRATEGY
+                        </div>
+                        <h1 class="text-4xl sm:text-6xl font-black tracking-tight leading-tight text-stone-800 font-brand">
+                            神奈川から始めよう。<br>
+                            <span class="text-transparent bg-clip-text bg-gradient-to-r from-amber-600 via-orange-500 to-amber-700">
+                                Perfect Combustion
+                            </span>
+                        </h1>
+                        <p class="text-xs sm:text-base text-stone-500 max-w-xl mx-auto leading-relaxed">
+                            単なるプロテインの物販ではなく、地域に「飲む習慣」を根付かせる。<br>現場での経験から導き出した、地に足の着いた展開モデルのご提案です。
+                        </p>
+                    </div>
+                    <img src="https://images.unsplash.com/photo-1497935586351-b67a49e012bf?auto=format&fit=crop&w=1200&q=80" alt="Cafe Background" class="absolute inset-0 z-0 opacity-15 w-full h-full object-cover rounded-3xl mix-blend-multiply">
+                `
+            },
+            {
+                id: 1,
+                category: "VALUE",
+                subtitle: "本質的な価値",
+                title: "「回復」を目的としたプロテイン。",
+                content: `
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-8 items-start h-full pt-4">
+                        <div class="space-y-6">
+                            <h3 class="text-lg sm:text-2xl font-bold text-stone-800 leading-snug border-l-4 border-amber-500 pl-3">
+                                筋トレ専用ではありません。<br>身体を整え、回復させるための飲み物です。
+                            </h3>
+                            <p class="text-stone-600 text-sm sm:text-base leading-relaxed">
+                                この商品の一番の強みは「誰でも、自分のライフスタイルで飲めること」です。<br><br>
+                                ガチ勢にはガチ勢の、ライトユーザーにはライトユーザーの飲み方があります。その"懐の深さ"こそが、製品の最大の魅力でありポテンシャルです。
+                            </p>
+                        </div>
+                        <div class="w-full h-48 md:h-full min-h-[250px] rounded-2xl border border-stone-200 overflow-hidden shadow-inner relative group">
+                            <img src="https://images.unsplash.com/photo-1509042239860-f550ce710b93?auto=format&fit=crop&w=800&q=80" alt="Relaxing recovery coffee" class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105">
+                            <div class="absolute inset-0 bg-amber-900/5 pointer-events-none"></div>
+                        </div>
+                    </div>
+                `
+            },
+            {
+                id: 2,
+                category: "STYLE",
+                subtitle: "飲み方の提案",
+                title: "シェイカーか、マグカップか。<br>どちらも正解。",
+                content: `
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-8 items-start h-full pt-4">
+                        <div class="w-full h-48 md:h-full min-h-[250px] rounded-2xl border border-stone-200 overflow-hidden shadow-inner order-2 md:order-1 relative group">
+                            <img src="https://images.unsplash.com/photo-1517705008128-361805f42e86?auto=format&fit=crop&w=800&q=80" alt="Shaker and Mug lifestyle" class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105">
+                            <div class="absolute inset-0 bg-stone-900/5 pointer-events-none"></div>
+                        </div>
+                        <div class="space-y-6 order-1 md:order-2">
+                            <h3 class="text-lg sm:text-xl font-bold text-stone-800 leading-snug">
+                                オリジナルシェイカーはブランドの大切な資産。<br>そして、楽しみ方はさらに広げられます。
+                            </h3>
+                            <p class="text-stone-600 text-sm leading-relaxed">
+                                練習後のダンサーなら、お気に入りの専用シェイカーでBCAAをしっかり摂るのが正解です。<br><br>
+                                一方で、朝ならマグカップに熱湯を入れてスプーンで混ぜるだけ。夏ならアイスラテ、豆乳やオーツミルク、ハニーやキャラメル。生活スタイルによって楽しみ方を選べます。
+                            </p>
+                        </div>
+                    </div>
+                `
+            },
+            {
+                id: 3,
+                category: "STORY",
+                subtitle: "妻との実話から",
+                title: "「これ、本当にプロテイン？」",
+                content: `
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-8 items-start h-full pt-4">
+                        <div class="space-y-6">
+                            <h3 class="text-lg sm:text-xl font-bold text-stone-800 leading-snug">
+                                ある朝、妻がカフェラテだと思って飲んでいた。
+                            </h3>
+                            <p class="text-stone-600 text-sm leading-relaxed">
+                                妻がホットでこのプロテインを飲みながら「これ、本当にプロテインなの？」と言いました。普通の美味しいカフェラテだと思ったそうです。<br><br>
+                                その一言で、この商品の可能性を改めて実感しました。トレーニング後だけでなく、朝の一杯や普段のカフェタイムにも自然に取り入れられる。そんな日常に寄り添えるプロテインだと感じています。
+                            </p>
+                        </div>
+                        <div class="w-full h-48 md:h-full min-h-[250px] rounded-2xl border border-amber-100 overflow-hidden relative flex flex-col items-center justify-center p-6 shadow-inner group">
+                            <img src="https://images.unsplash.com/photo-1499914485622-a88fac536970?auto=format&fit=crop&w=800&q=80" alt="Woman smiling with mug" class="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-105">
+                            <div class="absolute inset-0 bg-white/75 backdrop-blur-[2px]"></div>
+                            <i class="fa-solid fa-quote-left text-amber-400/60 text-5xl absolute top-4 left-4 z-10"></i>
+                            <p class="text-stone-800 text-sm font-bold text-center leading-loose relative z-10 px-4">
+                                「シェイカーで激しく振る必要がない。<br>いつものマグカップで、温かく飲める。<br>だから毎朝続く。」
+                            </p>
+                        </div>
+                    </div>
+                `
+            },
+            {
+                id: 4,
+                category: "CULTURE",
+                subtitle: "目指す場所",
+                title: "「また飲みに来たよ」と<br>言われる場所を作る。",
+                content: `
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-8 items-start h-full pt-4">
+                        <div class="w-full h-48 md:h-full min-h-[250px] rounded-2xl border border-stone-200 overflow-hidden shadow-inner order-2 md:order-1 relative group">
+                            <img src="https://images.unsplash.com/photo-1554118811-1e0d58224f24?auto=format&fit=crop&w=800&q=80" alt="Happy cafe gathering" class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105">
+                            <div class="absolute inset-0 bg-stone-900/5 pointer-events-none"></div>
+                        </div>
+                        <div class="space-y-6 order-1 md:order-2">
+                            <h3 class="text-lg sm:text-xl font-bold text-stone-800 leading-snug">
+                                試食文化とは、イベントを開催して<br>一度だけ売ることではありません。
+                            </h3>
+                            <p class="text-stone-600 text-sm leading-relaxed">
+                                地域の人々が日常的に「また飲みに来たよ」と立ち寄れる拠点を増やしていく考え方です。<br><br>
+                                まずは神奈川でその場所を育て、再現可能なモデルケースを構築します。地域で磨き上げた仕組みを基に、他県でも展開できる土台を育てていきます。
+                            </p>
+                        </div>
+                    </div>
+                `
+            },
+            {
+                id: 5,
+                category: "LOCAL",
+                subtitle: "地域連携モデル",
+                title: "神奈川から、手を取り合う。",
+                content: `
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-8 items-start h-full pt-4">
+                        <div class="space-y-6">
+                            <h3 class="text-lg sm:text-xl font-bold text-stone-800 leading-snug">
+                                FM戸塚、応援店舗、そしてスタジオ。<br>点と点を繋ぎ、地域の信頼を積み重ねる。
+                            </h3>
+                            <p class="text-stone-600 text-sm leading-relaxed">
+                                FM戸塚の電波で声を届け、地域で愛されるカフェや美容院にサンプルを置き、現場で直接手渡す。<br><br>
+                                この泥臭い連携の積み重ねこそが、地域で一番強いブランドを作ります。
+                            </p>
+                        </div>
+                        <div class="grid grid-rows-3 gap-3 text-sm text-stone-600">
+                            <div class="bg-white p-4 rounded-xl border border-stone-200 shadow-sm flex items-center gap-4">
+                                <div class="w-10 h-10 rounded-full bg-amber-100 flex items-center justify-center text-amber-700 shrink-0"><i class="fa-solid fa-radio"></i></div>
+                                <div><span class="font-bold text-stone-800 block">FM戸塚</span>地域への広い認知と信頼の獲得。</div>
+                            </div>
+                            <div class="bg-white p-4 rounded-xl border border-stone-200 shadow-sm flex items-center gap-4">
+                                <div class="w-10 h-10 rounded-full bg-amber-100 flex items-center justify-center text-amber-700 shrink-0"><i class="fa-solid fa-store"></i></div>
+                                <div><span class="font-bold text-stone-800 block">応援店舗</span>チラシ設置と相互送客によるハブ化。</div>
+                            </div>
+                            <div class="bg-amber-50 p-4 rounded-xl border border-amber-200 shadow-sm flex items-center gap-4">
+                                <div class="w-10 h-10 rounded-full bg-amber-500 flex items-center justify-center text-white shrink-0"><i class="fa-solid fa-mug-hot"></i></div>
+                                <div><span class="font-bold text-amber-900 block">試飲会</span>現場での体験と直接的なコミュニケーション。</div>
+                            </div>
+                        </div>
+                    </div>
+                `
+            },
+            {
+                id: 6,
+                category: "EVENT",
+                subtitle: "イベント運営",
+                title: "現場から始まる、対面のフロー。",
+                content: `
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-8 items-start h-full pt-4">
+                        <div class="w-full h-48 md:h-full min-h-[250px] rounded-2xl border border-stone-200 overflow-hidden shadow-inner order-2 md:order-1 relative group">
+                            <img src="https://images.unsplash.com/photo-1556742049-0cfed4f6a45d?auto=format&fit=crop&w=800&q=80" alt="Handing a warm cup" class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105">
+                            <div class="absolute inset-0 bg-stone-900/5 pointer-events-none"></div>
+                        </div>
+                        <div class="space-y-6 order-1 md:order-2">
+                            <h3 class="text-lg sm:text-xl font-bold text-stone-800 leading-snug">
+                                試飲会での温度感を大切にする。
+                            </h3>
+                            <p class="text-stone-600 text-sm leading-relaxed">
+                                まずはスタジオでの試飲会を皮切りにスタートします。<br>現場でどのような会話が生まれ、どうすれば喜んで手に取ってもらえるか。お客様の反応を一つひとつ丁寧に見ながら、対面ならではの安心感を提供します。
+                            </p>
+                            <ul class="text-sm text-stone-600 space-y-3">
+                                <li><strong class="text-amber-700">1. 立ち話から：</strong>自然に温かいラテを手渡す。</li>
+                                <li><strong class="text-amber-700">2. 味への共感：</strong>驚きを共有し、安心感を添える。</li>
+                                <li><strong class="text-amber-700">3. 楽しみ方の提案：</strong>「おうちではマグカップで」と伝える。</li>
+                            </ul>
+                        </div>
+                    </div>
+                `
+            },
+            {
+                id: 7,
+                category: "LINE",
+                subtitle: "LINEによる導線設計",
+                title: "現場の笑顔を、そのままLINEへ。",
+                content: `
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-8 items-start h-full pt-4">
+                        <div class="space-y-6">
+                            <h3 class="text-lg sm:text-xl font-bold text-stone-800 leading-snug">
+                                価値を提供し続ける、<br>継続的なコミュニケーションの入口。
+                            </h3>
+                            <p class="text-stone-600 text-sm leading-relaxed">
+                                試飲でファンになっていただいた方へ、専用QRコードから公式LINEへの登録をご案内します。<br><br>
+                                登録いただいた方には、季節のアレンジレシピ、イベント情報、飲み方のアイデアなどを継続的にお届けします。LINEは売るためではなく、ブランドとの接点を育てるコミュニケーションの入口として活用します。
+                            </p>
+                        </div>
+                        <div class="w-full h-48 md:h-full min-h-[250px] rounded-2xl border border-stone-200 overflow-hidden flex flex-col items-center justify-center p-6 relative shadow-inner group">
+                            <img src="https://images.unsplash.com/photo-1511920170033-f8396924c348?auto=format&fit=crop&w=800&q=80" alt="Cafe table" class="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-105">
+                            <div class="absolute inset-0 bg-white/80 backdrop-blur-[2px]"></div>
+                            <i class="fa-solid fa-qrcode text-6xl text-amber-500 mb-4 relative z-10 drop-shadow-md"></i>
+                            <div class="text-center space-y-2 relative z-10">
+                                <span class="font-bold text-stone-800 block text-sm">専用QRコードによる計測</span>
+                                <p class="text-xs text-stone-600">店舗ごと、イベントごとの登録経路を可視化し、効果的な集客ルートを把握します。</p>
+                            </div>
+                        </div>
+                    </div>
+                `
+            },
+            {
+                id: 8,
+                category: "DATA",
+                subtitle: "データ管理の考え方",
+                title: "数字は、現場のために。",
+                content: `
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-8 items-start h-full pt-4">
+                        <div class="w-full h-48 md:h-full min-h-[250px] rounded-2xl border border-stone-200 overflow-hidden shadow-inner order-2 md:order-1 relative group">
+                            <img src="https://images.unsplash.com/photo-1460925895917-afdab827c52f?auto=format&fit=crop&w=800&q=80" alt="Data analytics" class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105">
+                            <div class="absolute inset-0 bg-stone-900/5 pointer-events-none"></div>
+                        </div>
+                        <div class="space-y-6 order-1 md:order-2">
+                            <h3 class="text-lg sm:text-xl font-bold text-stone-800 leading-snug">
+                                数字は管理するためではなく、<br>改善の羅針盤として使います。
+                            </h3>
+                            <p class="text-stone-600 text-sm leading-relaxed">
+                                登録者数や購入転換率といったデータは、単なる結果の報告ではありません。「どうすればもっと一人ひとりに寄り添えるか」「現場のトークや導線をどう変えれば良いか」を考えるための重要な指標です。<br><br>
+                                スプレッドシート等で透明性を持って共有し、現場の改善サイクルを回します。
+                            </p>
+                        </div>
+                    </div>
+                `
+            },
+            {
+                id: 9,
+                category: "SNS",
+                subtitle: "SNSとの連携",
+                title: "広告より、体験を届けよう。",
+                content: `
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-8 items-start h-full pt-4">
+                        <div class="space-y-6">
+                            <h3 class="text-lg sm:text-xl font-bold text-stone-800 leading-snug">
+                                画面の中の数字を追うよりも、<br>目の前の笑顔を大切にする。
+                            </h3>
+                            <p class="text-stone-600 text-sm leading-relaxed">
+                                現場で試飲した方が「美味しい！」と驚く体験。それが口コミやUGC（ユーザー投稿）としてSNSにシェアされていく。<br><br>
+                                体験レビューやアレンジレシピのリール動画など、リアルな声の積み重ねが、再現性のある一番強いブランドを作ります。
+                            </p>
+                        </div>
+                        <div class="grid grid-cols-2 gap-3 text-xs text-stone-600">
+                            <div class="bg-white p-4 rounded-xl border border-stone-200 shadow-sm">
+                                <i class="fa-solid fa-camera text-amber-500 text-lg mb-2 block"></i>
+                                <span class="font-bold text-stone-800 block mb-1">体験レビュー</span>
+                                現場でのリアルな驚きの声。
+                            </div>
+                            <div class="bg-white p-4 rounded-xl border border-stone-200 shadow-sm">
+                                <i class="fa-solid fa-mug-hot text-amber-500 text-lg mb-2 block"></i>
+                                <span class="font-bold text-stone-800 block mb-1">UGC（ユーザー投稿）</span>
+                                おうちカフェの様子をシェア。
+                            </div>
+                            <div class="bg-white p-4 rounded-xl border border-stone-200 shadow-sm">
+                                <i class="fa-solid fa-video text-amber-500 text-lg mb-2 block"></i>
+                                <span class="font-bold text-stone-800 block mb-1">リール動画</span>
+                                簡単なアレンジレシピの紹介。
+                            </div>
+                            <div class="bg-white p-4 rounded-xl border border-stone-200 shadow-sm">
+                                <i class="fa-solid fa-comments text-amber-500 text-lg mb-2 block"></i>
+                                <span class="font-bold text-stone-800 block mb-1">口コミの連鎖</span>
+                                応援店舗からの自然な波及。
+                            </div>
+                        </div>
+                    </div>
+                `
+            },
+            {
+                id: 10,
+                category: "ROADMAP",
+                subtitle: "今後の展開",
+                title: "神奈川から、日本の文化を変える。",
+                content: `
+                    <div class="space-y-6 pt-4">
+                        <p class="text-stone-600 text-sm leading-relaxed text-center max-w-2xl mx-auto">
+                            まずは神奈川の現場から着実にスタートし、データと経験を蓄積しながらモデルを育てていきます。
+                        </p>
+                        <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 text-sm">
+                            <div class="bg-white p-5 rounded-xl border border-stone-200 shadow-sm">
+                                <span class="font-bold text-amber-700 block mb-2 text-base">STEP 1：モデル確立</span>
+                                <p class="text-stone-600 text-xs leading-relaxed">
+                                    現場での試飲会を重ね、お客様の反応を見ながら定期開催の形を整えます。LINE登録によるデータ蓄積を開始します。
+                                </p>
+                            </div>
+                            <div class="bg-amber-50 p-5 rounded-xl border border-amber-200 shadow-sm relative sm:scale-105 z-10">
+                                <span class="font-bold text-amber-800 block mb-2 text-base">STEP 2：地域認知の拡大</span>
+                                <p class="text-stone-600 text-xs leading-relaxed">
+                                    FM戸塚での発信や応援店舗との連携を強化。蓄積したデータを基に改善サイクルを回し、神奈川エリアでの根を深く張ります。
+                                </p>
+                            </div>
+                            <div class="bg-white p-5 rounded-xl border border-stone-200 shadow-sm">
+                                <span class="font-bold text-stone-700 block mb-2 text-base">STEP 3：全国への準備</span>
+                                <p class="text-stone-600 text-xs leading-relaxed">
+                                    培った「人が集まり、継続に繋がる仕組み」を整理し、他県でも再現できる形を作ります。
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                `
+            },
+            {
+                id: 11,
+                category: "MESSAGE",
+                subtitle: "最後に",
+                title: "まず、神奈川で。",
+                content: `
+                    <div class="text-center space-y-6 py-8 flex flex-col items-center justify-center h-full relative overflow-hidden rounded-2xl">
+                        <img src="./Zushi_Marina.jpg"
+                             alt="逗子マリーナ"
+                             class="absolute inset-0 z-0 opacity-10 w-full h-full object-cover mix-blend-multiply">
+                        
+<h3 class="text-2xl sm:text-3xl font-black text-amber-800 leading-snug relative z-10">
+美味しいは、人をつなぐ。
+</h3>
+<p class="text-sm sm:text-base text-stone-600 max-w-xl mx-auto leading-relaxed relative z-10">
+リアルで生まれた体験は、口コミとなり、SNSへ広がり、また新しい人をリアルへ連れてきます。<br><br>
+<b>リアルワールド × ソーシャルネット。</b><br><br>
+この循環を育て続けることで、ブランドは広告ではなく体験によって広がっていきます。<br>
+その積み重ねの先に、LINE登録1万人という目標も現実的なものになっていくと考えています。<br><br>
+まずは神奈川から、一緒に育てていきましょう。
+</p>
+
+                    </div>
+                `
+            }
+        ];
+
+        let activeSlideIndex = 0;
+        let isGlobalScrollMode = false;
+        let isIndexMenuOpen = false;
+
+        const sidebarList = document.getElementById('menu-items-list');
+        const scrollModeWrapper = document.getElementById('scroll-cards-wrapper');
+
+        // Initial Data Render Injection
+        slidesData.forEach((slide, idx) => {
+            const btn = document.createElement('button');
+            btn.onclick = () => jumpToSlide(idx);
+            btn.className = `w-full text-left px-3 py-2 rounded-xl text-xs font-bold transition flex items-center gap-2 menu-nav-btn-${idx} hover:bg-stone-50 text-stone-500`;
+            btn.innerHTML = `
+                <span class="text-[10px] text-stone-300 w-5">${idx + 1}</span>
+                <span class="truncate">${slide.title.replace(/<br>/g, '')}</span>
+            `;
+            sidebarList.appendChild(btn);
+
+            const card = document.createElement('div');
+            card.id = `scroll-card-node-${idx}`;
+            card.className = `w-full rounded-3xl border border-stone-200 overflow-hidden flex flex-col relative bg-white text-stone-700 shadow-sm`;
+            card.innerHTML = `
+                <div class="px-6 py-4 flex justify-between items-center border-b border-stone-100 bg-stone-50/50">
+                    <div class="flex items-center gap-2">
+                        <span class="text-[10px] bg-amber-500/10 text-amber-700 font-extrabold px-2 py-0.5 rounded-full">${slide.category}</span>
+                        <span class="text-xs text-stone-300">|</span>
+                        <span class="text-xs text-stone-400 font-bold">${slide.subtitle}</span>
+                    </div>
+                    <span class="text-xs font-bold text-stone-400">PAGE ${idx + 1} / 12</span>
+                </div>
+                <div class="p-6 sm:p-10">
+                    ${slide.category === "PROPOSAL" || slide.category === "MESSAGE" ? '' : `<h2 class="text-lg sm:text-xl font-bold text-amber-800 mb-6 border-l-4 border-amber-500 pl-3">${slide.title}</h2>`}
+                    <div>${slide.content}</div>
+                </div>
+            `;
+            scrollModeWrapper.appendChild(card);
+        });
+
+        function toggleViewMode() {
+            isGlobalScrollMode = !isGlobalScrollMode;
+            const slideContainer = document.getElementById('slide-presentation-container');
+            const scrollContainer = document.getElementById('scroll-presentation-container');
+            const btnText = document.getElementById('view-mode-text');
+            const btnIcon = document.querySelector('#view-mode-btn i');
+
+            if (isGlobalScrollMode) {
+                slideContainer.classList.add('hide');
+                scrollContainer.classList.remove('hide');
+                btnText.textContent = "スライドめくり表示";
+                btnIcon.className = "fa-solid fa-images";
+            } else {
+                slideContainer.classList.remove('hide');
+                scrollContainer.classList.add('hide');
+                btnText.textContent = "全スライド縦並び（スクショ用）";
+                btnIcon.className = "fa-solid fa-square-poll-horizontal";
+                renderActiveSlide();
+            }
+        }
+
+        function toggleMenu() {
+            isIndexMenuOpen = !isIndexMenuOpen;
+            const sideMenu = document.getElementById('side-menu');
+            if (isIndexMenuOpen) {
+                sideMenu.classList.remove('translate-x-full');
+            } else {
+                sideMenu.classList.add('translate-x-full');
+            }
+        }
+
+        function jumpToSlide(index) {
+            activeSlideIndex = index;
+            toggleMenu();
+            if (isGlobalScrollMode) {
+                const element = document.getElementById(`scroll-card-node-${index}`);
+                if (element) {
+                    element.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                }
+            } else {
+                renderActiveSlide();
+            }
+        }
+
+        function renderActiveSlide() {
+            const slide = slidesData[activeSlideIndex];
+            const slideCard = document.getElementById('slide-card-element');
+            const header = document.getElementById('slide-header');
+            const badge = document.getElementById('slide-badge');
+            const subtitle = document.getElementById('slide-subtitle');
+            const body = document.getElementById('slide-body');
+            const progress = document.getElementById('progress-bar');
+            const counter = document.getElementById('slide-counter');
+            const subLabel = document.getElementById('slide-title-label');
+
+            badge.textContent = slide.category;
+            subtitle.textContent = slide.subtitle;
+            counter.textContent = `${activeSlideIndex + 1} / ${slidesData.length}`;
+            subLabel.textContent = slide.title.replace(/<br>/g, '');
+
+            if (slide.category === "PROPOSAL" || slide.category === "MESSAGE") {
+                body.innerHTML = slide.content;
+            } else {
+                body.innerHTML = `
+                    <h2 class="text-xl sm:text-2xl font-bold text-amber-800 mb-6 border-l-4 border-amber-500 pl-3 font-brand">
+                        ${slide.title}
+                    </h2>
+                    <div class="h-full">${slide.content}</div>
+                `;
+            }
+
+            progress.style.width = `${((activeSlideIndex + 1) / slidesData.length) * 100}%`;
+
+            slidesData.forEach((_, idx) => {
+                const link = document.querySelector(`.menu-nav-btn-${idx}`);
+                if (link) {
+                    if (idx === activeSlideIndex) {
+                        link.className = `w-full text-left px-3 py-2 rounded-xl text-xs font-bold transition flex items-center gap-2 menu-nav-btn-${idx} bg-amber-500/10 text-amber-700 border border-amber-500/20`;
+                    } else {
+                        link.className = `w-full text-left px-3 py-2 rounded-xl text-xs font-bold transition flex items-center gap-2 menu-nav-btn-${idx} hover:bg-stone-50 text-stone-500`;
+                    }
+                }
+            });
+        }
+
+        function prevSlide() { if (activeSlideIndex > 0) { activeSlideIndex--; renderActiveSlide(); } }
+        function nextSlide() { if (activeSlideIndex < slidesData.length - 1) { activeSlideIndex++; renderActiveSlide(); } }
+
+        document.addEventListener('keydown', (e) => {
+            if (isGlobalScrollMode) return;
+            if (e.key === 'ArrowRight' || e.key === ' ') { e.preventDefault(); nextSlide(); }
+            if (e.key === 'ArrowLeft') { e.preventDefault(); prevSlide(); }
+        });
+
+        let touchStartPointerX = 0;
+        let touchEndPointerX = 0;
+        const mainSwipeCard = document.getElementById('slide-card-element');
+        mainSwipeCard.addEventListener('touchstart', (e) => { touchStartPointerX = e.changedTouches[0].screenX; }, {passive: true});
+        mainSwipeCard.addEventListener('touchend', (e) => { touchEndPointerX = e.changedTouches[0].screenX; evaluateGesture(); }, {passive: true});
+
+        function evaluateGesture() {
+            if (isGlobalScrollMode) return;
+            if (touchStartPointerX - touchEndPointerX > 50) nextSlide();
+            if (touchStartPointerX - touchEndPointerX < -50) prevSlide();
+        }
+
+        renderActiveSlide();
+    </script>
+</body>
+</html>
